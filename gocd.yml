@@ -1,0 +1,51 @@
+format_version: 3
+
+pipelines:
+  nodejs_mysql_pipeline:
+    group: NodeJS
+    label_template: "${COUNT}"
+    lock_behavior: none
+
+    materials:
+      git_material:
+        git: "https://github.com/your_username/your_nodejs_project.git"
+        branch: "master"
+
+    stages:
+      - Build:
+          clean_workspace: true
+          jobs:
+            - Build:
+                resources:
+                  - gocd-agent
+                environment_variables:
+                  NODE_ENV: "production"
+                tasks:
+                  - exec: 
+                      command: "npm install"
+                  - exec:
+                      command: "npm run build"
+
+      - Test:
+          clean_workspace: true
+          jobs:
+            - Test:
+                resources:
+                  - gocd-agent
+                environment_variables:
+                  NODE_ENV: "test"
+                tasks:
+                  - exec:
+                      command: "npm test"
+
+      - Deploy:
+          clean_workspace: true
+          jobs:
+            - Deploy:
+                resources:
+                  - gocd-agent
+                environment_variables:
+                  NODE_ENV: "production"
+                tasks:
+                  - exec:
+                      command: "node index.js"
